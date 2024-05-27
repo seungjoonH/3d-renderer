@@ -99,8 +99,6 @@ class Screen:
       if sum(bool(pos) for pos in Screen.delta_pos) > 0:
         self.__camera.rotate()
 
-
-
       self.render()
 
       self.__clock.tick(self.__FPS)

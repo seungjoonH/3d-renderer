@@ -5,8 +5,8 @@ if __name__ == '__main__':
   c = Camera()
   s = Screen('3D Renderer', camera=c)
   
-  cube = Cube(center=Point(.0, .0, .0), radius=1.0)
-  sphere = Sphere(center=Point(.0, .0, .0), radius=1.0, segments=10)
+  cube = Cube(center=Point(.5, .5, .5), radius=.5)
+  # sphere = Sphere(center=Point(.0, .0, .0), radius=1.0, segments=20)
 
   random_stars = list(
     map(lambda t: Point(t), [(
@@ -17,7 +17,7 @@ if __name__ == '__main__':
   )
 
   c.add_object(cube)
-  c.add_object(sphere)
+  # c.add_object(sphere)
   c.add_objects(random_stars)
 
   c.set_axis_visible(True)

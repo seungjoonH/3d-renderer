@@ -56,43 +56,61 @@ class Camera:
     self.n = self.p / self.p_norm
 
     px, py, pz = self.p
+    px_sign, py_sign, pz_sign = map(np.sign, self.p)
+    px_abs, py_abs, pz_abs = map(np.abs, self.p)
     
-    ix = pz / math.sqrt(px ** 2 + pz ** 2)
-    iy = 0
-    iz = -px / math.sqrt(px ** 2 + pz ** 2)
+    ix = iy = iz = .0
+    jx = jy = jz = .0
+
+    px_py = math.sqrt(px ** 2 + py ** 2) 
+    py_pz = math.sqrt(py ** 2 + pz ** 2) 
+    pz_px = math.sqrt(pz ** 2 + px ** 2) 
     
-    self.i_prime = np.array([ix, iy, iz])
+    if px and py:
+      # px != 0, py != 0
+      ix = pz / pz_px
+      iz = -px / pz_px
 
-    if px == py == 0:
-      self.j_prime = np.array([ .0, -1.0, .0])
-    elif py == pz == 0:
-      self.j_prime = np.array([ .0, -1.0, .0])
-    elif pz == px == 0:
-      self.j_prime = np.array([ .0, .0, -1.0])
-
-    if 0 not in [px, py]:
       alpha = - (px ** 2 + pz ** 2) / (px * py)
-      beta  = pz / px
+      beta = pz / px
 
-      self.j_prime = np.array([1, alpha, beta])
-      self.j_prime /= np.linalg.norm(self.j_prime)
+      j_norm = math.sqrt(1 + alpha ** 2 + beta ** 2)
+      jx, jy, jz = np.array([1, alpha, beta]) / j_norm
 
-    elif 0 not in [py, pz]:
-      alpha = - (py ** 2 + px ** 2) / (py * px)
-      beta  = px / py
+    elif px and not py:
+      # px != 0, py == 0, pz != 0
+      if pz: 
+        ix = px_sign * pz_abs / pz_px
+        iz = -pz_sign * px_abs / pz_px
+        jx, jy, jz = 0, -1, 0
 
-      self.j_prime = np.array([beta, 1, alpha])
-      self.j_prime /= np.linalg.norm(self.j_prime)
+      # px != 0, py == 0, pz == 0
+      else:
+        iz = -px_sign
+        jy = px_sign
+    
+    elif not px and py:
+      # px == 0, py != 0, pz != 0
+      if pz:
+        ix = py_sign
+        jy = -pz_abs / py_pz
+        jz = pz_sign * py / py_pz
 
-    elif 0 not in [pz, px]:
-      alpha = - (pz ** 2 + py ** 2) / (pz * py)
-      beta  = py / pz
+      # px == 0, py != 0, pz == 0
+      else:
+        ix = -py_sign / math.sqrt(2)
+        iz =  py_sign / math.sqrt(2)
+        jx = -py_sign / math.sqrt(2)
+        jz = -py_sign / math.sqrt(2)
 
-      self.j_prime = np.array([alpha, beta, 1])
-      self.j_prime /= np.linalg.norm(self.j_prime)
+    else:
+      ix = pz_sign
+      jy = pz_sign
 
-    if self.j_prime[1] > 0:
-      self.j_prime *= -1
+    self.i_prime = np.array([ix, iy, iz])
+    self.j_prime = np.array([jx, jy, jz])
+
+    if self.j_prime[1] > 0: self.j_prime *= -1
 
     self.__axis = [XAxis(), YAxis(), ZAxis()]
 
@@ -146,7 +164,14 @@ class Camera:
     A_prime = np.array([x, y, z])
 
     A_prime_v = A_prime - self.v
-    if not (0 < sum(A_prime_v / av) <= 3): 
+
+    div = np.array([.0, .0, .0])
+
+    for i in range(3):
+      if av[i]: div[i] = A_prime_v[i] / av[i]
+      else: div[i] = .0
+
+    if not (0 < sum(div) <= 3):
       return None
     
     a_prime = A_prime - self.c
