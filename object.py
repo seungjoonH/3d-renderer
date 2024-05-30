@@ -1,9 +1,13 @@
+from abc import ABC, abstractmethod
 import numpy as np
 from color import Color
 import math
+import random
 
-class Object:
+class Object(ABC):
+  @abstractmethod
   def get_coords(self): pass
+  @abstractmethod
   def get_render_data(self): pass
 
 class Point(Object):
@@ -14,20 +18,45 @@ class Point(Object):
       self.x, self.y, self.z = args[0]
 
     elif len(args) == 2:
-      vec, color = args
+      vec, self.color = args
       self.x, self.y, self.z = vec
 
     elif len(args) == 3:
       self.x, self.y, self.z = args
 
     elif len(args) == 4:
-      self.x, self.y, self.z, color = args
+      self.x, self.y, self.z, self.color = args
 
   def get_coords(self): 
     return np.array([self.x, self.y, self.z])
 
   def get_render_data(self):
     return 0, self.color
+
+class RandomPoint(Point):
+  def __init__(self, *args):
+    self.color = Color.WHITE
+
+    self.x_range = []
+    self.y_range = []
+    self.z_range = []
+
+    if len(args) in [1, 2]:
+      self.x_range = args[0][:]
+      self.y_range = args[0][:]
+      self.z_range = args[0][:]
+
+    elif len(args) in [3, 4]:
+      self.x_range = args[0][:]
+      self.y_range = args[1][:]
+      self.z_range = args[2][:]
+
+    if not len(args) % 2:
+      self.color = args[-1]
+
+    self.x = random.uniform(self.x_range[0], self.x_range[1])
+    self.y = random.uniform(self.y_range[0], self.y_range[1])
+    self.z = random.uniform(self.z_range[0], self.z_range[1])
 
 class Line(Object):
   def __init__(self, start, end, color=Color.WHITE):
@@ -40,18 +69,6 @@ class Line(Object):
 
   def get_render_data(self):
     return 1, self.color
-
-class Polygon(Object):
-  def __init__(self, points, color=Color.WHITE):
-    self.points = points
-    self.color = color
-
-  def get_coords(self):
-    return self.points
-  
-  def get_render_data(self):
-    return 2, self.color
-
 
 class Axis(Line):
   def __init__(self, length=2, color=Color.WHITE):
@@ -83,6 +100,17 @@ class ZAxis(Axis):
     super().__init__()
     self.end = np.array([0, 0, self.length])
     self.color = Color.BLUE
+
+class Polygon(Object):
+  def __init__(self, points, color=Color.WHITE):
+    self.points = points
+    self.color = color
+
+  def get_coords(self):
+    return self.points
+  
+  def get_render_data(self):
+    return 2, self.color
 
 class Cube:
   def __init__(self, center, radius):
@@ -145,8 +173,6 @@ class Sphere:
     h = self.radius * math.sin(theta * n)
     r = self.radius * math.cos(theta * n)
     c = self.center + np.array([.0, h, .0])
-
-    print(n, math.degrees(theta * n), r)
 
     dt = 2 * math.pi / Sphere.circle_segments
     points = [

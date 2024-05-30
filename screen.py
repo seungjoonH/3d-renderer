@@ -2,7 +2,6 @@ import pygame as pg
 from color import Color
 from key import Key
 from object import *
-import random
 
 class Screen:
   size = [1200, 800]
