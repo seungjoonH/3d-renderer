@@ -199,4 +199,3 @@ class Sphere:
 
   def get_render_data(self):
     return 3, Color.WHITE
-  

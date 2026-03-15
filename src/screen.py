@@ -1,10 +1,12 @@
 import pygame as pg
+from config import SIZE
 from color import Color
 from key import Key
 from object import *
+import random
 
 class Screen:
-  size = [1200, 800]
+  size = SIZE
 
   def __init__(self, title, camera, FPS=240):
     self.__clock = pg.time.Clock()
@@ -30,7 +32,8 @@ class Screen:
         pg.draw.line(self.__display, color, coords[0], coords[1])
       
       elif dimension == 2:
-        pg.draw.lines(self.__display, color, True, coords)
+        if not coords or any(p is None for p in coords): continue
+        pg.draw.polygon(self.__display, color, coords)
 
       elif dimension == 3:
         for points in coords:
@@ -38,6 +41,13 @@ class Screen:
           if len(points) < 2: continue
           pg.draw.lines(self.__display, color, True, points)
   
+    for datum in data:
+      dimension, color, coords = datum
+
+      if dimension == 2:
+        if not coords or any(p is None for p in coords): continue
+        pg.draw.lines(self.__display, tuple(int(c * .6) for c in color), True, coords)
+
   def play(self):
     running = True
 
@@ -89,14 +99,14 @@ class Screen:
       self.__camera.set_moving_velocity(velocity)
 
       # 마우스 커서 화면 중앙 고정
-      pg.mouse.set_pos(Screen.size[0] * .5, Screen.size[1] * .5)
+      pg.mouse.set_pos(SIZE[0] * .5, SIZE[1] * .5)
       # 마우스 커서 숨김
       pg.mouse.set_visible(False)
 
-      Screen.delta_pos = pg.mouse.get_rel()
+      delta_pos = pg.mouse.get_rel()
 
-      if sum(bool(pos) for pos in Screen.delta_pos) > 0:
-        self.__camera.rotate()
+      if sum(bool(pos) for pos in delta_pos) > 0:
+        self.__camera.rotate(delta_pos)
 
       self.render()
 

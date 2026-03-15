@@ -1,6 +1,6 @@
 import numpy as np
+from config import SIZE
 from object import *
-from screen import Screen
 import math
 
 class Camera:
@@ -13,7 +13,7 @@ class Camera:
   k = np.array([ .0,  .0, 1.0])
 
   # 화면 크기
-  w, h = Screen.size
+  w, h = SIZE[0], SIZE[1]
   
   # 좌표-픽셀간 비율
   ratio = 1000
@@ -124,7 +124,8 @@ class Camera:
   
   # 여러 객체 추가
   def add_objects(self, objs):
-    self.__objects += objs
+    # self.__objects += objs
+    self.__objects.extend(objs)
 
   # 객체 집합 교체
   def set_objects(self, *objs):
@@ -236,9 +237,9 @@ class Camera:
     
     self.update()
 
-  # 시선전환
-  def rotate(self):
-    self.__rotate(Screen.delta_pos)
+  # 시선전환 (delta_pos: 마우스 이동량 [dx, dy])
+  def rotate(self, delta_pos):
+    self.__rotate(delta_pos)
 
   def __move(self, delta):
     self.v += delta

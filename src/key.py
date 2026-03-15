@@ -26,4 +26,3 @@ class Key:
   def is_held(self, key):
     any_in = lambda group: any([self.held[k] for k in group])
     return any_in(Key.__data[key])
-    
